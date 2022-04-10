@@ -1,0 +1,615 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>yibaifen</title>
+    <style>
+        @import url("css/style_2.css");
+        /* @import url("css/pagestyle.css");
+        @import url("css/liststyle.css");
+        @import url("css/font.css");
+        @import url("css/singer.css"); */
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        #world {
+            background: #CCCC99;
+            width: 101.1%;
+            height: 100%;
+            background: linear-gradient(#e4e0ba, #f7d9aa);
+        }
+        
+        #app {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        #test {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            bottom: 0px;
+            /* overflow: hidden; */
+            z-index: 100;
+        }
+        
+        .singersong {
+            /* background-image: url(./img/bg.jpg);
+            height: 100%; */
+        }
+    </style>
+
+</head>
+<script type="text/javascript" src="js/button.js">
+</script>
+<!-- <script type="text/javascript" src="js/mymouse.js" id="mymouse"></script> -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<body>
+
+    <div id="app" style="overflow:auto;border:1px solid #000000;">
+
+        <div id="test">
+            <div id="header">
+                <div id="header-left">
+                    <img id="header-img" src="img/blackcat.png">
+                </div>
+                <div id="header-right">
+                    <h2 id="header-char">wang,liu,hu's unique players,welcome to our music world</h2>
+                </div>
+            </div>
+            <div id="search-main">
+                <div id="search">
+                    <p>&nbsp;</p>
+                    <a href="#" @click="gethomepage">
+                        <img src="img/homepage.png ">
+                        <font :class="{hu:(homepage==true)}">
+                            首页
+                        </font>
+                    </a>
+                    <a href="#" @click="getsinger">
+                        <img src="img/singer.png ">
+                        <font :class="{hu:(singer==true)}">歌手</font>
+                    </a>
+                    <a href="#" @click="getPHB();link();">
+                        <img src="images/排行榜.png ">
+                        <font :class="{hu:(showphb==true)}">排行榜</font>
+                    </a>
+                    <a href="#" @click="getsort">
+                        <img src="img/sort.png ">
+                        <font :class="{hu:(sort==true)}">
+                            歌曲分类
+                        </font>
+                    </a>
+                    <a href="#">
+                        <img src="img/liu.png ">
+                        <font :class="{hu:(liu==true)}">搜索结果</font>
+                    </a>
+                    <input type="text" autocomplete="off" v-model="query" @keyup.enter="searchMusicList" @click="getliu">
+                </div>
+            </div>
+            <div id="show">
+                <div id="homepage" v-show="homepage">
+                    <div id="focus_Box">
+                        <span class="prev">&nbsp;</span>
+                        <span class="next">&nbsp;</span>
+                        <ul>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/1.jpg" />
+                            </li>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/2.jpg" />
+                            </li>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/3.jpg" />
+                            </li>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/4.jpg" />
+                            </li>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/5.jpg" />
+                            </li>
+                            <li>
+                                <img width="445" height="308" alt="" src="images/6.jpg" />
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+
+                <!-- 搜索功能 -->
+                <div id="liu" v-show="liu">
+                    <div class="list">
+                        <ul class="wang">
+                            <li v-for="(item,index) in musiclist">
+                                <a href="javascript:;" @click="playMusic(item.id); playMv(item.mvid);">
+                                {{index+1}}&nbsp;
+                                {{item.name}}&nbsp;&nbsp;
+                            </a>
+                                <!-- <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a></a>
+                             -->
+                                <!-- <span>
+                                    <i v-if="item.mvid!=0" @click="playMV(item.mvid)"></i>
+                                </span> -->
+                            </li>
+                        </ul>
+                        <div class="ying">
+                            <div class="firstframe">MV</div>
+                            <div class="secondframe" v-show="searchMv" style="display: none;">
+                                <!-- <dl v-for="item in hotComments">
+                                    <dt>
+                                      <img :src="item.user.avatarUrl+'?param=x60y60'" alt="" />
+                                   </dt>
+                               <dd class="name">{{item.user.nickname}}</dd>
+                               <dd class="detail">
+                                {{item.content}}
+                              </dd>
+                               </dl> -->
+                                <video v-show="searchMv" width="600" height="400" :src="mvUrl" controls="controls"></video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="sort" v-show="sort">
+                    <!-- <div id="totallist"> -->
+                    <div id="musiclistleft">
+                        <ul id="musiclistimg1" v-show="isFirst">
+                            <li>
+                                <img src="http://p1.music.126.net/o3G7lWrGBQAvSRt3UuApTw==/2002210674180201.jpg?param=100y100" @click="newMusic"><br>
+                                <a href="javascript:;" @click="newMusic">华语精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p2.music.126.net/jpelUV507276mmlQrzYx1g==/109951165533118533.jpg?param=100y100" @click="RSSoul"><br>
+                                <a href="javascript:;" @click="RSSoul">R&S/Soul精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/71ZzdcDPzqr2vx8LEvD7ng==/109951165509443970.jpg?param=100y100" @click="westernmusic"><br>
+                                <a href="javascript:;" @click="westernmusic">青春你好</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/Gp9u38SolbtDZj0IUiF66w==/109951165293562575.jpg?param=100y100" @click="studyload"><br>
+                                <a href="javascript:;" @click="studyload">成长之路</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/HxhJRsksY62n0e5gSBwiCQ==/109951165447036805.jpg?param=100y100" @click="remember"><br>
+                                <a href="javascript:;" @click="remember">流行精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/XZd1IWsuTC6whlt3w09IQA==/109951165511519605.jpg?param=100y100" @click="goodnight"><br>
+                                <a href="javascript:;" @click="goodnight">夜晚精选</a>
+                            </li>
+                        </ul>
+                        <ul id="musiclistimg2" v-show="isSecond">
+                            <li>
+                                <img src="https://p3.music.126.net/OZxeO1WrL6BmsiREaR3dYg==/109951165261942220.jpg?param=100y100" @click="folkmusic"><br>
+                                <a href="javascript:;" @click="folkmusic">民谣精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/lm6q3tJBK7GMMWZ8DPyspA==/109951164104207060.jpg?param=100y100" @click="Englishstyle"><br>
+                                <a href="javascript:;" @click="Englishstyle">英伦精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/kZZnakCALvjHrqKvGjmfoQ==/109951164365202983.jpg?param=100y100" @click="ninetymemory"><br>
+                                <a href="javascript:;" @click="ninetymemory">90回忆</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/_x4-xhUXhwaJ0MV6zcfkAQ==/109951163725130047.jpg?param=100y100" @click="romanticmusic"><br>
+                                <a href="javascript:;" @click="romanticmusic">乡村精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/MROOTGahtFUMvRv7phGSuQ==/109951164073925923.jpg?param=100y100" @click="worldmusic"><br>
+                                <a href="javascript:;" @click="worldmusic">世界音乐</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/_Lxsa-_RpGr2AXVGf2umPQ==/109951165339451787.jpg?param=100y100" @click="MusicalInstruments"><br>
+                                <a href="javascript:;" @click="MusicalInstruments">私人订制</a>
+                            </li>
+                        </ul>
+                        <ul id="musiclistimg3" v-show="isThird">
+                            <li>
+                                <img src="https://p4.music.126.net/83B0ih1jmAVQDqogY5sE-A==/109951164869262500.jpg?param=100y100" @click="Musictest"><br>
+                                <a href="javascript:;" @click="Musictest">学习精选</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/TxUiutliWpGME0x_sm6ldw==/109951164988260937.jpg?param=100y100" @click="prairiesmusic"><br>
+                                <a href="javascript:;" @click="prairiesmusic">草原之夜</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/un-PTH12Ls8f0-PtrNe0Ng==/109951164950612764.jpg?param=100y100" @click="filmMusic"><br>
+                                <a href="javascript:;" @click="filmMusic">经典影视</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/Uwm0XTQ4bZRelIi-Sh-WSw==/109951165432846236.jpg?param=100y100" @click="idolMusic"><br>
+                                <a href="javascript:;" @click="idolMusic">追星之路</a>
+                            </li>
+                            <li>
+                                <img src="https://p3.music.126.net/wrhvYn7qGztoXFTKrT8SHA==/109951165114585025.jpg?param=100y100" @click="relaxMusic"><br>
+                                <a href="javascript:;" @click="relaxMusic">放松一下</a>
+                            </li>
+                            <li>
+                                <img src="https://p4.music.126.net/D2cKtZStQc4n8eMPbt9Q0g==/109951165271032506.jpg?param=100y100" @click="breakupMusic"><br>
+                                <a href="javascript:;" @click="breakupMusic">分手快乐</a>
+                            </li>
+                        </ul>
+
+
+                        <div id="pages">
+                            <ul id="changeP">
+                                <li>
+                                    <a href="#" value="" @click="lastpage">
+                                        <</a>
+                                </li>
+                                <li><a href="#" class="active" value="1" @click="changefirstpage">1</a></li>
+                                <li><a href="#" value="2" @click="changesecondpage">2</a></li>
+                                <li><a href="#" value="3" @click="changethirdpage">3</a></li>
+                                <li><a href="#" value="4" @click="nextpage">></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="musiclistright">
+                        <ul id="realmusiclist">
+                            <li v-for="item in musictable"><a href="javascript:;" @click="listNewMusic(item.id)">{{item.name}}</a>
+                                <!-- <li v-for="item in musictable"><a href="javascript:;" @click="getnicelist">{{item.name}}</a> -->
+                        </ul>
+                    </div>
+
+
+                </div>
+
+
+                <div v-show="singer" id=" singer" style="margin-top: 100px;font-size: 10px; ">
+                    <div style="margin-right: 150px;margin-left: 200px;">
+                        <span>
+                        
+                    <a><img src="./images/OMsinger.jpg" @click="isShow1();getOMSingers();" style="margin-left: 100px; height:142px; width:140px;margin-right: 70px;" ></a>   <br/>  
+                    <div id="fonts">  <p  style="margin-left: 100px;"><a href="#" @click="isShow1();getOMSingers();" >欧美歌手</a></p></div>
+            
+                    </span>
+
+                        <span>
+                    <a>
+                        <img src="./images/国语singer.jpg" style=" height:142px; width:140px;margin-right: 70px;" @click="getChinaSingers();isShow2();"></a><br>
+                        <div id="fonts"><p><a href="#" @click="getChinaSingers();isShow2();">国语歌手</a></p></div>
+            
+                    </span>
+
+                        <span>
+                    <a><img src="images/Jansinger.jpg" style=" height:142px; width:140px;margin-right: 70px;" @click="getJanSingers();isShow3();" ></a><br>
+                         <div id="fonts"><p><a href="#" @click="getJanSingers();isShow3();">日本歌手</a></p></div>
+                    </span>
+                    </div>
+
+                    <div style="margin-right: 150px;margin-left: 300px;">
+                        <span>
+                    <a><img src="./images/Koreansinger.jpg" style=" height:142px; width:140px;margin-right: 70px;" @click="getKoreanSingers();isShow4();"  ></a><br>
+                         <div id="fonts"><p><a href="#" @click="getKoreanSingers();isShow4();">韩国歌手</a></p></div>
+                    </span>
+
+                        <span>
+                        <a><img src="./images/hot.png" style=" height:142px; width:140px;margin-right: 70px;" @click="getHotSinger();isShow5();"  ></a><br>
+                             <div id="fonts"><p><a href="#" @click="getHotSinger();isShow5();" >热门歌手</a></p></div>
+                    </span>
+
+                        <span>
+                            <a><img src="./images/QT.jpg" style=" height:140px; width:140px;margin-right: 70px;" @click="getQTSingers();isShow6();"  ></a><br>
+                                 <div id="fonts"><p><a href="#" @click="getQTSingers();isShow6();" >其他歌手</a></p></div>
+                    </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="singersong">
+                <!--1 -->
+                <div v-if="showOMS">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in OMSingers">
+                    <a href="#">
+                    <img :src="item.picUrl+'?param=x160y160' "  @click="getSingleSinger(item.id);isShow11();"></a><br/>
+                    <b  @click="getSingleSinger(item.id);isShow11();">{{item.name}}</b>
+                    </span>
+                    </div>
+
+                </div>
+                <!--2 -->
+
+                <div v-show="showChinaS">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in ChinaSingers">
+                        <a href="#"><img :src="item.picUrl+'?param=x150y150' "  @click="getSingleSinger(item.id);isShow21();"></a><br/>
+                        <b  @click="getSingleSinger(item.id);isShow21();">{{item.name}}</b>
+                        </span>
+                    </div>
+
+                </div>
+                <!--3 -->
+                <div v-show="showJanS">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in  JanSingers">
+                        <a href="#"><img :src="item.picUrl+'?param=x150y150' "  @click="getSingleSinger(item.id);isShow31();"></a><br/>
+                        <b  @click="getSingleSinger(item.id);isShow31();">{{item.name}}</b> 
+                        </span>
+                    </div>
+
+                </div>
+                <!--4 -->
+                <div v-show="showKS">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in KoreanSingers">
+                        <a href="#"><img :src="item.picUrl+'?param=x199y199' "  @click="getSingleSinger(item.id);isShow41();"></a><br/>
+                        <b @click="getSingleSinger(item.id);isShow41();">{{item.name}}</b>
+                        </span>
+                    </div>
+
+                </div>
+                <!--5-->
+                <div v-show="showHot">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in HotSingers">
+                    <a href="#"><img :src="item.picUrl+'?param=x199y199' "  @click="getSingleSinger(item.id);isShow51();"></a><br/>
+                    <b  @click="getSingleSinger(item.id);isShow51();">{{item.name}}</b>
+                    </span>
+                    </div>
+                </div>
+                <!--6-->
+
+                <div v-show="showQT">
+                    <h1 @click="return1();" style="font-size: 18px;">返回</h1>
+                    <div class="singer">
+                        <span v-for="item in QTSingers">
+                    <a href="#"><img :src="item.picUrl+'?param=x199y199' "  @click="getSingleSinger(item.id);isShow61();"></a><br/>
+                    <b @click="getSingleSinger(item.id);isShow61();">{{item.name}}</b>
+                    </span>
+                    </div>
+
+                </div>
+
+                <!--这是每个歌手歌曲的显示界面哦-->
+                <!--1-->
+                <div v-show="showSingerSong1">
+                    <h1 @click="return2OM" style="font-size: 18px;">返回</h1>
+                    <!-- <div>
+                        <img :src="item.picUrl+'?param=x199y199' "  size=>
+                        <b>{{sitem.name}}</b>
+                    </div> -->
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+                                <!--播放歌曲-->
+                                <a style="font-size:15px">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{ item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+
+                </div>
+                <!--2-->
+                <div v-show="showSingerSong2">
+                    <h1 @click="return2China" style="font-size: 18px;">返回</h1>
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+
+                                <a style="font-size:15px">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+
+                </div>
+                <!--3-->
+
+                <div v-show="showSingerSong3">
+                    <h1 @click="return2Jan" style="font-size: 18px;">返回</h1>
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+                                <a style="font-size:15px">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+
+                </div>
+                <!--4-->
+
+                <div v-show="showSingerSong4">
+                    <h1 @click="return2Korean" style="font-size: 18px;">返回</h1>
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+                                <a style="font-size:15px">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+                </div>
+
+
+                <div v-show="showSingerSong5">
+                    <h1 @click="return2Hot" style="font-size: 18px;">返回</h1>
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+                                <a style="font-size:15px">
+                                {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+                </div>
+
+
+
+                <div v-show="showSingerSong6">
+                    <h1 @click="return2QT" style="font-size: 18px;">返回</h1>
+                    <ul>
+                        <li v-for="(item,index) in  singerSongs">
+                            <p @click="playMusic(item.id);isShowZZ();comment(item.id);">
+                                <a style="font-size:15px">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                {{ index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                <a style="font-size:15px">{{item.al.name}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <a href="#"><img id="img1" src="./images/MV.png" @click="playMV(item.mv)"></a>
+                                <br/>
+                                <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) ">
+                            </p>
+                            <br/>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <!-- <iframe src="./phb.html" style="width: 100%;height: 100%;" ></iframe> -->
+
+            <!-- 以下为排行榜 -->
+
+            <!-- 排行榜左边div 各榜单-->
+            <div id="div0">
+                <div id="divp1 " v-show="showphb">
+                    <div id="divp11" v-for="item in links">
+                        <span style="text-align: center;">
+                <a href="#" @click="phbMusic(item.id);showPHB=true;showphb=false;"><img :src="item. coverImgUrl+'?param=x160y160'" style="margin-right: 40px; margin-left:60px" >
+                <p style="font-size: 15px;"><a  @click="phbMusic(item.id);showPHB=true;showphb=false;">{{item.name}}</a></p>
+                <p style="font-size: 15px;"><a  @click="phbMusic(item.id);showPHB=true;showphb=false;">({{item.updateFrequency}})</a></p>
+                </a>
+            </span>
+                    </div>
+                </div>
+
+                <!-- 排行榜右边div 各榜单歌曲 接口有重复-->
+                <div claa="divphb">
+                    <div v-show="showPHB">
+                        <p @click="returnPHB" style="font-size: 30px;">返回</p>
+                        <ul>
+                            <li v-for="(item,index) in phbSongs">
+                                <p @click="playMusic(item.id);isShowZZ();comment(item.id);" style="font-size: 15px;">
+                                    <a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            {{index+1}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                                    <!--播放歌曲-->
+                                    <a style="font-size:15px">{{item.al.name}}</a>
+                                    <a href="#"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <img  id="img1" src="./images/MV.png"  @click="playMV(item.mv)"></a>
+                                    <br/><br/>
+                                    <hr style="height:1px;border-top:1px groove rgb(172, 159, 49) width=100%">
+                                </p>
+                                <br/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div class="audio_con">
+                <audio style="left:25%" ref='audio' :src="musicUrl" controls autoplay loop class="myaudio"></audio>
+
+            </div>
+            <!-- 点击遮罩层出现评论-->
+            <div v-show="showZZ" class="zz">
+                <div class="content" style="overflow:auto;border:1px solid #000000;">
+                    <dl v-for="item in hotComments">
+                        <dt>
+                            <img :src="item.user.avatarUrl+'?param=x60y60'" alt="" />
+                         </dt>
+                        <dd class="name">{{item.user.nickname}}</dd>
+                        <dd class="detail">
+                            {{item.content}}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="mask" @click="hide"></div>
+            </div>
+            <!-- singerMV -->
+            <div v-show="isShow" class="zz">
+                <div class="content">
+                    <video ref='video' style=" width: 800px;height: 500px;" :src="mvUrl" controls="controls"></video>
+                </div>
+                <div class="mask" @click="hide"></div>
+            </div>
+
+
+            <div id="show-nav" style="position: fixed; bottom: 0;">
+                <img src="img/dog.png ">
+                <img src="img/cat.png ">
+                <img src="img/ra.png ">
+                <img src="img/dog2.png ">
+                <img src="img/panda.png ">
+                <!-- 插入功能从这儿插入按照上面格式写入文字，图片从img文件里找 -->
+            </div>
+            <div id="show-nav" style="position: fixed; bottom: 0;right: 0;">
+                <img src="img/dog.png ">
+                <img src="img/cat.png ">
+                <img src="img/ra.png ">
+                <img src="img/dog2.png ">
+                <img src="img/panda.png ">
+                <!-- 插入功能从这儿插入按照上面格式写入文字，图片从img文件里找 -->
+            </div>
+            <marquee id="header-marquee " direction="left " onmouseover="this.stop() " onmouseout="this.start() ">
+                <h2>我们的js文件加载很慢很慢很慢（1~5min不等），请大家耐心等待，谢谢谢谢~~~~~~~~
+                </h2>
+            </marquee>
+        </div>
+    </div>
+    <div id="world"></div>
+    </div>
+</body>
+<script src="js/ZoomPic.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<!-- <script type="text/javascript" src="js/v-show.js"></script> -->
+<script src="js/songlist.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/fly.js"></script>
+
+
+</html>
